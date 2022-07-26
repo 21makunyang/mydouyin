@@ -17,7 +17,7 @@ type FeedResponse struct {
 func Feed(c *gin.Context) {
 	token := c.Query("token")
 	NP := NameAndPassword{}
-
+	videos := []Video{}
 	if _, exist := UserLoginInfo[token]; exist == false {
 		c.JSON(http.StatusOK, Response{
 			StatusCode: 1,
@@ -25,18 +25,17 @@ func Feed(c *gin.Context) {
 		})
 		return
 	} else {
-		videos := []Video{}
-		models.DB.Limit(10).Order("publish_time").Find(&videos)
+		models.DB.Order("publish_time desc").Limit(10).Find(&videos)
 		for i, video := range videos {
 			authorId := video.AuthorId
 			author := User{}
 			models.DB.Where("id=?", authorId).Find(&author)
-
 			models.DB.Where("token=?", token).Find(&NP)
 			loger := User{}
-			models.DB.Where("name=?", NP.Name).Find(loger)
+			models.DB.Where("name=?", NP.Name).Find(&loger)
 			var focus int64 = 0
 			models.DB.Model(&Relation{}).Where("user_id=? AND to_user_id=?", loger.Id, authorId).Count(&focus)
+
 			if focus == 1 {
 				author.IsFollow = true
 			} else {
@@ -55,7 +54,7 @@ func Feed(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, FeedResponse{
 		Response:  Response{StatusCode: 0},
-		VideoList: DemoVideos,
+		VideoList: videos,
 		NextTime:  time.Now().Unix(),
 	})
 
