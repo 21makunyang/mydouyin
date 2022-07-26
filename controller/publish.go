@@ -43,13 +43,13 @@ func Publish(c *gin.Context) {
 	models.DB.Where("id=?", NP.Id).Find(&user)
 	finalName := fmt.Sprintf("%d_%s", user.Id, filename)
 	saveFile := filepath.Join("./public", finalName)
-	if err := c.SaveUploadedFile(data, saveFile); err != nil {
-		c.JSON(http.StatusOK, Response{
-			StatusCode: 1,
-			StatusMsg:  err.Error(),
-		})
-		return
-	}
+	//if err := c.SaveUploadedFile(data, saveFile); err != nil {
+	//	c.JSON(http.StatusOK, Response{
+	//		StatusCode: 1,
+	//		StatusMsg:  err.Error(),
+	//	})
+	//	return
+	//}
 
 	videoname := strconv.FormatInt(user.Id, 10) + title + ".mp4"
 	models.UploadAliyunOss(videoname, saveFile)
